@@ -367,6 +367,46 @@ class Customer {
 
 public class BagelApp extends JFrame {
 
+    private void showLoyaltyPointsDialog(Customer customer, Checkout checkout, JLabel loyaltyPointsLabel) {
+    // Create dialog for loyalty program
+    JDialog loyaltyDialog = new JDialog();
+    loyaltyDialog.setTitle("Loyalty Program");
+    loyaltyDialog.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
+
+    // Create panel for loyalty program
+    JPanel loyaltyPanel = new JPanel(new BorderLayout());
+    loyaltyPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+    // Create label for loyalty points
+    JLabel loyaltyPointsTextLabel = new JLabel("You have " + customer.getLoyaltyPoints() + " loyalty points.");
+
+    // Create button to redeem loyalty points
+    JButton redeemPointsButton = new JButton("Redeem Points");
+    redeemPointsButton.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+            int redeemedPoints = customer.redeemLoyaltyPoints();
+            double total = checkout.getTotal();
+            ddouble discount = redeemedPoints / 10.0;
+            double total = checkout.getTotal() - discount;
+            checkout.setTotal(total);
+            checkout.setTotal(total);
+            checkout.addItem(new OrderItem("Loyalty Program Discount", -discount));
+            loyaltyPointsLabel.setText("Loyalty Points: " + customer.getLoyaltyPoints());
+            JOptionPane.showMessageDialog(loyaltyDialog, "You have redeemed " + redeemedPoints + " loyalty points for a discount of $" + String.format("%.2f", discount) + ".", "Loyalty Program", JOptionPane.INFORMATION_MESSAGE);
+            loyaltyDialog.dispose();
+        }
+    });
+
+    // Add components to loyalty panel
+    loyaltyPanel.add(loyaltyPointsTextLabel, BorderLayout.CENTER);
+    loyaltyPanel.add(redeemPointsButton, BorderLayout.SOUTH);
+
+    // Add loyalty panel to loyalty dialog
+    loyaltyDialog.add(loyaltyPanel);
+    loyaltyDialog.pack();
+    loyaltyDialog.setLocationRelativeTo(null);
+    loyaltyDialog.setVisible(true);
+}
     /* 
 	 *	  Declarations
      */
@@ -486,6 +526,23 @@ public class BagelApp extends JFrame {
                 showRedeemLoyaltyPointsDialog();
             }
         });
+        
+        orderCompleteButton.addActionListener(new ActionListener() {
+    public void actionPerformed(ActionEvent e) {
+        // Calculate and display total
+        double total = checkout.getTotal();
+        totalLabel.setText("Total: $" + String.format("%.2f", total));
+
+        // Show loyalty program dialog
+        if (customer.getLoyaltyPoints() >= 10) {
+            showLoyaltyPointsDialog(customer, checkout, loyaltyPointsLabel);
+        }
+
+        // Clear checkout and update loyalty points
+        checkout.clear();
+        loyaltyPointsLabel.setText("Loyalty Points: " + customer.getLoyaltyPoints());
+    }
+});
 
         // Add loyalty points label and buttons to user interface
         JPanel loyaltyPointsPanel = new JPanel();
@@ -495,45 +552,9 @@ public class BagelApp extends JFrame {
         add(loyaltyPointsPanel, BorderLayout.NORTH);
     }
 
-   private void showLoyaltyPointsDialog(Customer customer, Checkout checkout, JLabel loyaltyPointsLabel) {
-    // Create dialog for loyalty program
-    JDialog loyaltyDialog = new JDialog();
-    loyaltyDialog.setTitle("Loyalty Program");
-    loyaltyDialog.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
-
-    // Create panel for loyalty program
-    JPanel loyaltyPanel = new JPanel(new BorderLayout());
-    loyaltyPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
-    // Create label for loyalty points
-    JLabel loyaltyPointsTextLabel = new JLabel("You have " + customer.getLoyaltyPoints() + " loyalty points.");
-
-    // Create button to redeem loyalty points
-    JButton redeemPointsButton = new JButton("Redeem Points");
-    redeemPointsButton.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-            int redeemedPoints = customer.redeemLoyaltyPoints();
-            double total = checkout.getTotal();
-            double discount = redeemedPoints / 10.0;
-            total -= discount;
-            checkout.setTotal(total);
-            checkout.addItem(new OrderItem("Loyalty Program Discount", -discount));
-            loyaltyPointsLabel.setText("Loyalty Points: " + customer.getLoyaltyPoints());
-            JOptionPane.showMessageDialog(loyaltyDialog, "You have redeemed " + redeemedPoints + " loyalty points for a discount of $" + String.format("%.2f", discount) + ".", "Loyalty Program", JOptionPane.INFORMATION_MESSAGE);
-            loyaltyDialog.dispose();
-        }
-    });
-
-    // Add components to loyalty panel
-    loyaltyPanel.add(loyaltyPointsTextLabel, BorderLayout.CENTER);
-    loyaltyPanel.add(redeemPointsButton, BorderLayout.SOUTH);
-
-    // Add loyalty panel to loyalty dialog
-    loyaltyDialog.add(loyaltyPanel);
-    loyaltyDialog.pack();
-    loyaltyDialog.setLocationRelativeTo(null);
-    loyaltyDialog.setVisible(true);
-}
+    private void showLoyaltyPointsDialog() {
+        JOptionPane.showMessageDialog(this, "You have " + customer.getLoyaltyPoints() + " loyalty points.");
+    }
 
     private void showRedeemLoyaltyPointsDialog() {
         String input = JOptionPane.showInputDialog(this, "How many loyalty points do you want to redeem?");
